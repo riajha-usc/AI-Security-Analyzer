@@ -1,0 +1,17 @@
+{
+  "name": "cf-ai-security-analyzer",
+  "version": "1.0.0",
+  "description": "AI-powered web security analyzer built on Cloudflare Workers",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "dev": "npm run build && wrangler dev dist/index.ts",
+    "deploy": "npm run build && wrangler deploy dist/index.ts",
+    "cf-typegen": "wrangler types"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^4.20241205.0",
+    "typescript": "^5.5.2",
+    "wrangler": "^3.99.0"
+  }
+}

@@ -1,0 +1,15 @@
+name = "cf-ai-security-analyzer"
+main = "src/index.ts"
+compatibility_date = "2024-12-05"
+compatibility_flags = ["nodejs_compat"]
+
+[ai]
+binding = "AI"
+
+[[workflows]]
+name = "SecurityAnalysisWorkflow"
+binding = "SECURITY_WORKFLOW"
+class_name = "SecurityAnalysisWorkflow"
+
+[vars]
+ENVIRONMENT = "production"

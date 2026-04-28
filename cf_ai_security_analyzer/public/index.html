@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SentinelAI - Web Security Analyzer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #050810;
+      --bg2: #090e1a;
+      --surface: #0d1423;
+      --surface2: #111929;
+      --border: #1a2540;
+      --border2: #243050;
+      --accent: #00d4ff;
+      --accent2: #0099cc;
+      --accent-glow: rgba(0, 212, 255, 0.15);
+      --accent-glow2: rgba(0, 212, 255, 0.05);
+      --warn: #ff6b35;
+      --warn-glow: rgba(255, 107, 53, 0.15);
+      --ok: #00e5a0;
+      --ok-glow: rgba(0, 229, 160, 0.12);
+      --text: #e2e8f5;
+      --text2: #8899bb;
+      --text3: #4a5878;
+      --mono: 'Space Mono', monospace;
+      --sans: 'DM Sans', sans-serif;
+      --grade-a: #00e5a0;
+      --grade-b: #7dd3fc;
+      --grade-c: #fbbf24;
+      --grade-d: #fb923c;
+      --grade-f: #f87171;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: var(--sans);
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    /* Animated grid background */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* Header */
+    header {
+      position: relative;
+      z-index: 10;
+      padding: 16px 28px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: rgba(9, 14, 26, 0.95);
+      backdrop-filter: blur(12px);
+      flex-shrink: 0;
+    }
+
+    .logo-mark {
+      width: 32px;
+      height: 32px;
+      background: var(--accent);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 0 16px rgba(0,212,255,0.5);
+      animation: pulse-logo 3s ease-in-out infinite;
+    }
+
+    @keyframes pulse-logo {
+      0%, 100% { box-shadow: 0 0 16px rgba(0,212,255,0.5); }
+      50% { box-shadow: 0 0 28px rgba(0,212,255,0.8), 0 0 48px rgba(0,212,255,0.3); }
+    }
+
+    .header-text h1 {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+    }
+
+    .header-text p {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: var(--mono);
+      letter-spacing: 0.05em;
+    }
+
+    .header-badge {
+      margin-left: auto;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-family: var(--mono);
+      font-size: 10px;
+      color: var(--text3);
+      letter-spacing: 0.08em;
+    }
+
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--ok);
+      box-shadow: 0 0 8px var(--ok);
+      animation: blink 2s ease-in-out infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* Main layout */
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Chat panel */
+    .chat-panel {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px 28px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border2) transparent;
+    }
+
+    .messages::-webkit-scrollbar { width: 4px; }
+    .messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+    /* Welcome state */
+    .welcome {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      flex: 1;
+      text-align: center;
+      gap: 20px;
+      padding: 40px;
+      animation: fade-up 0.6s ease forwards;
+    }
+
+    @keyframes fade-up {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .welcome-icon {
+      width: 72px;
+      height: 72px;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+      position: relative;
+    }
+
+    .welcome-icon::after {
+      content: '';
+      position: absolute;
+      inset: -1px;
+      border-radius: 20px;
+      background: linear-gradient(135deg, var(--accent), transparent 60%);
+      opacity: 0.3;
+      pointer-events: none;
+    }
+
+    .welcome h2 {
+      font-family: var(--mono);
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+
+    .welcome p {
+      font-size: 14px;
+      color: var(--text2);
+      max-width: 420px;
+      line-height: 1.6;
+    }
+
+    .example-prompts {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      justify-content: center;
+      max-width: 500px;
+    }
+
+    .example-prompt {
+      padding: 7px 14px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text2);
+      cursor: pointer;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .example-prompt:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: var(--accent-glow2);
+    }
+
+    /* Messages */
+    .message {
+      display: flex;
+      gap: 12px;
+      animation: fade-up 0.3s ease forwards;
+    }
+
+    .message.user { flex-direction: row-reverse; }
+
+    .message-avatar {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-family: var(--mono);
+      font-weight: 700;
+    }
+
+    .message.user .message-avatar {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text2);
+    }
+
+    .message.assistant .message-avatar {
+      background: var(--accent);
+      color: var(--bg);
+      clip-path: polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%);
+    }
+
+    .message-content {
+      max-width: 80%;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .message.user .message-content { align-items: flex-end; }
+
+    .message-bubble {
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .message.user .message-bubble {
+      background: var(--surface2);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      border-top-right-radius: 4px;
+    }
+
+    .message.assistant .message-bubble {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-top-left-radius: 4px;
+    }
+
+    .message-time {
+      font-size: 10px;
+      font-family: var(--mono);
+      color: var(--text3);
+    }
+
+    /* Security report card */
+    .report-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      max-width: 100%;
+    }
+
+    .report-header {
+      padding: 16px 20px;
+      background: var(--surface2);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .grade-badge {
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: var(--mono);
+      font-size: 24px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .grade-A { background: rgba(0,229,160,0.12); color: var(--grade-a); border: 1px solid rgba(0,229,160,0.3); }
+    .grade-B { background: rgba(125,211,252,0.12); color: var(--grade-b); border: 1px solid rgba(125,211,252,0.3); }
+    .grade-C { background: rgba(251,191,36,0.12); color: var(--grade-c); border: 1px solid rgba(251,191,36,0.3); }
+    .grade-D { background: rgba(251,146,60,0.12); color: var(--grade-d); border: 1px solid rgba(251,146,60,0.3); }
+    .grade-F { background: rgba(248,113,113,0.12); color: var(--grade-f); border: 1px solid rgba(248,113,113,0.3); }
+
+    .report-title {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .report-title .domain {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--accent);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .report-title .meta {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: var(--mono);
+      margin-top: 2px;
+    }
+
+    .overall-score {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .overall-score .score-num {
+      font-family: var(--mono);
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .overall-score .score-label {
+      font-size: 10px;
+      color: var(--text3);
+      font-family: var(--mono);
+    }
+
+    /* Score bars */
+    .score-bars {
+      padding: 16px 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .score-bar-item { display: flex; flex-direction: column; gap: 5px; }
+
+    .score-bar-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      font-family: var(--mono);
+    }
+
+    .score-bar-label span:first-child { color: var(--text2); }
+    .score-bar-label span:last-child { font-weight: 700; }
+
+    .score-bar-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.8s ease;
+    }
+
+    .fill-high { background: var(--ok); box-shadow: 0 0 8px var(--ok-glow); }
+    .fill-mid { background: #fbbf24; }
+    .fill-low { background: var(--warn); }
+    .fill-zero { background: var(--grade-f); }
+
+    /* Sections */
+    .report-section {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+    }
+
+    .section-title {
+      font-family: var(--mono);
+      font-size: 10px;
+      font-weight: 700;
+      color: var(--text3);
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .section-title::before {
+      content: '';
+      display: inline-block;
+      width: 3px;
+      height: 10px;
+      background: var(--accent);
+      border-radius: 2px;
+    }
+
+    .ai-insights {
+      font-size: 13px;
+      line-height: 1.7;
+      color: var(--text2);
+      white-space: pre-wrap;
+    }
+
+    .ai-insights strong, .ai-insights b {
+      color: var(--text);
+      font-weight: 600;
+    }
+
+    .warnings-list {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .warning-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--text2);
+      padding: 6px 10px;
+      background: var(--warn-glow);
+      border: 1px solid rgba(255,107,53,0.2);
+      border-radius: 6px;
+      line-height: 1.4;
+    }
+
+    .warning-icon { color: var(--warn); flex-shrink: 0; margin-top: 1px; }
+
+    .ok-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      font-family: var(--mono);
+      color: var(--ok);
+      padding: 6px 10px;
+      background: var(--ok-glow);
+      border: 1px solid rgba(0,229,160,0.2);
+      border-radius: 6px;
+    }
+
+    .checks-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+
+    .check-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text2);
+    }
+
+    .check-icon-pass { color: var(--ok); }
+    .check-icon-fail { color: var(--warn); }
+
+    /* Thinking indicator */
+    .thinking {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      border-top-left-radius: 4px;
+      font-size: 13px;
+      color: var(--text2);
+      font-family: var(--mono);
+    }
+
+    .thinking-dots {
+      display: flex;
+      gap: 4px;
+    }
+
+    .thinking-dots span {
+      width: 5px;
+      height: 5px;
+      border-radius: 50%;
+      background: var(--accent);
+      animation: bounce 1.2s ease-in-out infinite;
+    }
+
+    .thinking-dots span:nth-child(2) { animation-delay: 0.2s; }
+    .thinking-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes bounce {
+      0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+      40% { transform: scale(1); opacity: 1; }
+    }
+
+    .thinking-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 8px;
+    }
+
+    .thinking-step {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: var(--mono);
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.3s;
+    }
+
+    .thinking-step.active { color: var(--accent); }
+    .thinking-step.done { color: var(--ok); }
+
+    .step-indicator {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid currentColor;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 7px;
+      flex-shrink: 0;
+    }
+
+    .step-indicator.spinning {
+      animation: spin 1s linear infinite;
+      border-top-color: transparent;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Input area */
+    .input-area {
+      padding: 16px 28px 20px;
+      border-top: 1px solid var(--border);
+      background: rgba(9, 14, 26, 0.95);
+      backdrop-filter: blur(12px);
+      flex-shrink: 0;
+    }
+
+    .input-form {
+      display: flex;
+      gap: 10px;
+      align-items: flex-end;
+    }
+
+    .input-wrapper {
+      flex: 1;
+      position: relative;
+    }
+
+    textarea {
+      width: 100%;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 12px;
+      color: var(--text);
+      font-family: var(--sans);
+      font-size: 14px;
+      padding: 12px 16px;
+      resize: none;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      line-height: 1.5;
+      min-height: 48px;
+      max-height: 120px;
+    }
+
+    textarea::placeholder { color: var(--text3); }
+
+    textarea:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-glow);
+    }
+
+    .send-btn {
+      width: 44px;
+      height: 44px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--bg);
+      transition: all 0.2s;
+      flex-shrink: 0;
+    }
+
+    .send-btn:hover { background: var(--accent2); transform: scale(1.05); }
+    .send-btn:active { transform: scale(0.97); }
+    .send-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+    .send-btn svg { width: 18px; height: 18px; }
+
+    .input-hint {
+      font-size: 11px;
+      color: var(--text3);
+      font-family: var(--mono);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    /* Scrollbar for report */
+    .redirect-chain {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .redirect-hop {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
+      font-family: var(--mono);
+      color: var(--text2);
+    }
+
+    .redirect-hop::before {
+      content: '→';
+      color: var(--text3);
+      font-size: 10px;
+    }
+
+    .redirect-hop:first-child::before { content: '◆'; color: var(--accent); }
+
+    /* Error state */
+    .error-card {
+      padding: 14px 18px;
+      background: rgba(248,113,113,0.08);
+      border: 1px solid rgba(248,113,113,0.25);
+      border-radius: 12px;
+      font-size: 13px;
+      color: #fca5a5;
+      font-family: var(--mono);
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .score-bars { grid-template-columns: 1fr; }
+      .checks-grid { grid-template-columns: 1fr 1fr; }
+      header { padding: 12px 16px; }
+      .messages { padding: 16px; }
+      .input-area { padding: 12px 16px 16px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo-mark"></div>
+    <div class="header-text">
+      <h1>SentinelAI</h1>
+      <p>Powered by Cloudflare Workers AI · Llama 3.3 70B</p>
+    </div>
+    <div class="header-badge">
+      <div class="status-dot"></div>
+      <span>ONLINE</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="chat-panel">
+      <div class="messages" id="messages">
+        <div class="welcome" id="welcome">
+          <div class="welcome-icon">🛡️</div>
+          <h2>Web Security Analyzer</h2>
+          <p>Enter any URL or domain and I'll analyze its security posture — checking headers, SSL, DNS configuration, and redirects, then give you an AI-generated threat assessment.</p>
+          <div class="example-prompts">
+            <span class="example-prompt" onclick="setPrompt('Analyze https://cloudflare.com')">cloudflare.com</span>
+            <span class="example-prompt" onclick="setPrompt('Check security of https://github.com')">github.com</span>
+            <span class="example-prompt" onclick="setPrompt('Analyze https://example.com')">example.com</span>
+            <span class="example-prompt" onclick="setPrompt('What does a security grade mean?')">What does a grade mean?</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="input-area">
+        <div class="input-form">
+          <div class="input-wrapper">
+            <textarea
+              id="input"
+              placeholder="Enter a URL to analyze, or ask a security question..."
+              rows="1"
+              onkeydown="handleKey(event)"
+              oninput="autoResize(this)"
+            ></textarea>
+          </div>
+          <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </button>
+        </div>
+        <div class="input-hint">Enter a URL (e.g. https://example.com) · Press Enter to send</div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    const messagesEl = document.getElementById('messages');
+    const inputEl = document.getElementById('input');
+    const sendBtn = document.getElementById('sendBtn');
+    const welcomeEl = document.getElementById('welcome');
+
+    let chatHistory = [];
+    let isLoading = false;
+
+    function setPrompt(text) {
+      inputEl.value = text;
+      autoResize(inputEl);
+      inputEl.focus();
+    }
+
+    function autoResize(el) {
+      el.style.height = 'auto';
+      el.style.height = Math.min(el.scrollHeight, 120) + 'px';
+    }
+
+    function handleKey(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    }
+
+    function formatTime() {
+      return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+
+    function appendMessage(role, content, isHTML = false) {
+      if (welcomeEl) welcomeEl.remove();
+
+      const msg = document.createElement('div');
+      msg.className = `message ${role}`;
+
+      const avatar = document.createElement('div');
+      avatar.className = 'message-avatar';
+      avatar.textContent = role === 'user' ? 'U' : 'S';
+
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+
+      if (isHTML) {
+        bubble.innerHTML = content;
+      } else {
+        bubble.textContent = content;
+      }
+
+      const time = document.createElement('div');
+      time.className = 'message-time';
+      time.textContent = formatTime();
+
+      contentDiv.appendChild(bubble);
+      contentDiv.appendChild(time);
+      msg.appendChild(avatar);
+      msg.appendChild(contentDiv);
+      messagesEl.appendChild(msg);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      return bubble;
+    }
+
+    function showThinking() {
+      if (welcomeEl) welcomeEl.remove();
+
+      const msg = document.createElement('div');
+      msg.className = 'message assistant';
+      msg.id = 'thinking-msg';
+
+      const avatar = document.createElement('div');
+      avatar.className = 'message-avatar';
+      avatar.textContent = 'S';
+
+      const contentDiv = document.createElement('div');
+      contentDiv.className = 'message-content';
+
+      const bubble = document.createElement('div');
+      bubble.className = 'message-bubble';
+      bubble.innerHTML = `
+        <div class="thinking">
+          <div class="thinking-dots">
+            <span></span><span></span><span></span>
+          </div>
+          <span>Initializing security scan...</span>
+        </div>
+        <div class="thinking-steps" id="thinking-steps">
+          <div class="thinking-step active" id="step-headers">
+            <div class="step-indicator spinning">◌</div>
+            Scanning HTTP security headers
+          </div>
+          <div class="thinking-step" id="step-ssl">
+            <div class="step-indicator">○</div>
+            Verifying SSL/TLS certificate
+          </div>
+          <div class="thinking-step" id="step-dns">
+            <div class="step-indicator">○</div>
+            Querying DNS records (SPF/DMARC/DNSSEC)
+          </div>
+          <div class="thinking-step" id="step-redirects">
+            <div class="step-indicator">○</div>
+            Tracing HTTP redirect chain
+          </div>
+          <div class="thinking-step" id="step-ai">
+            <div class="step-indicator">○</div>
+            Running Llama 3.3 threat analysis
+          </div>
+        </div>
+      `;
+
+      contentDiv.appendChild(bubble);
+      msg.appendChild(avatar);
+      msg.appendChild(contentDiv);
+      messagesEl.appendChild(msg);
+      messagesEl.scrollTop = messagesEl.scrollHeight;
+
+      // Animate steps
+      const steps = ['headers', 'ssl', 'dns', 'redirects', 'ai'];
+      const delays = [400, 900, 1400, 1900, 2600];
+
+      steps.forEach((step, i) => {
+        if (i > 0) {
+          setTimeout(() => {
+            const prev = document.getElementById(`step-${steps[i-1]}`);
+            const curr = document.getElementById(`step-${step}`);
+            if (prev) {
+              prev.classList.remove('active');
+              prev.classList.add('done');
+              prev.querySelector('.step-indicator').textContent = '✓';
+              prev.querySelector('.step-indicator').classList.remove('spinning');
+            }
+            if (curr) {
+              curr.classList.add('active');
+              curr.querySelector('.step-indicator').classList.add('spinning');
+            }
+          }, delays[i]);
+        }
+      });
+    }
+
+    function removeThinking() {
+      const el = document.getElementById('thinking-msg');
+      if (el) el.remove();
+    }
+
+    function getFillClass(score) {
+      if (score >= 80) return 'fill-high';
+      if (score >= 60) return 'fill-mid';
+      if (score >= 30) return 'fill-low';
+      return 'fill-zero';
+    }
+
+    function getScoreColor(score) {
+      if (score >= 80) return 'var(--ok)';
+      if (score >= 60) return '#fbbf24';
+      if (score >= 30) return 'var(--warn)';
+      return 'var(--grade-f)';
+    }
+
+    function renderReport(report) {
+      const checkIcon = (pass) =>
+        pass
+          ? '<span class="check-icon-pass">✓</span>'
+          : '<span class="check-icon-fail">✗</span>';
+
+      const warnings = [
+        ...report.headers.warnings,
+        ...report.ssl.warnings,
+        ...report.dns.warnings,
+        ...report.redirects.warnings,
+      ].filter(w => !w.startsWith('Failed') && !w.startsWith('Could not'));
+
+      const warningsHTML = warnings.slice(0, 6).map(w => `
+        <div class="warning-item">
+          <span class="warning-icon">⚠</span>
+          <span>${escapeHTML(w)}</span>
+        </div>
+      `).join('');
+
+      const aiFormatted = report.aiInsights
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/^#{1,3}\s+(.+)$/gm, '<strong>$1</strong>')
+        .replace(/\n{2,}/g, '\n\n');
+
+      const redirectHTML = report.redirects.redirectChain.slice(0, 4).map(url => `
+        <div class="redirect-hop">${escapeHTML(url)}</div>
+      `).join('');
+
+      return `
+        <div class="report-card">
+          <div class="report-header">
+            <div class="grade-badge grade-${report.grade}">${report.grade}</div>
+            <div class="report-title">
+              <div class="domain">${escapeHTML(new URL(report.url).hostname)}</div>
+              <div class="meta">${new Date(report.timestamp).toLocaleString()}</div>
+            </div>
+            <div class="overall-score">
+              <div class="score-num" style="color:${getScoreColor(report.overallScore)}">${report.overallScore}</div>
+              <div class="score-label">/ 100</div>
+            </div>
+          </div>
+
+          <div class="score-bars">
+            ${[
+              { label: 'HTTP Headers', score: report.headers.score },
+              { label: 'SSL/TLS', score: report.ssl.score },
+              { label: 'DNS Config', score: report.dns.score },
+              { label: 'Redirects', score: report.redirects.score },
+            ].map(({ label, score }) => `
+              <div class="score-bar-item">
+                <div class="score-bar-label">
+                  <span>${label}</span>
+                  <span style="color:${getScoreColor(score)}">${score}</span>
+                </div>
+                <div class="score-bar-track">
+                  <div class="score-bar-fill ${getFillClass(score)}" style="width:${score}%"></div>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <div class="report-section">
+            <div class="section-title">DNS Checks</div>
+            <div class="checks-grid">
+              <div class="check-item">${checkIcon(report.dns.hasSPF)} SPF Record</div>
+              <div class="check-item">${checkIcon(report.dns.hasDMARC)} DMARC Record</div>
+              <div class="check-item">${checkIcon(report.dns.hasDNSSEC)} DNSSEC</div>
+              <div class="check-item">${checkIcon(report.ssl.valid)} SSL Valid</div>
+              <div class="check-item">${checkIcon(report.redirects.followsHTTPS)} HTTPS Redirect</div>
+              <div class="check-item">${checkIcon(report.headers.present.includes('strict-transport-security'))} HSTS</div>
+            </div>
+          </div>
+
+          ${warnings.length > 0 ? `
+          <div class="report-section">
+            <div class="section-title">Warnings (${warnings.length})</div>
+            <div class="warnings-list">${warningsHTML}</div>
+          </div>` : `
+          <div class="report-section">
+            <div class="ok-item">✓ No critical warnings detected</div>
+          </div>`}
+
+          ${report.redirects.redirectChain.length > 1 ? `
+          <div class="report-section">
+            <div class="section-title">Redirect Chain</div>
+            <div class="redirect-chain">${redirectHTML}</div>
+          </div>` : ''}
+
+          <div class="report-section">
+            <div class="section-title">AI Security Assessment · Llama 3.3</div>
+            <div class="ai-insights">${aiFormatted}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function escapeHTML(str) {
+      return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    function extractURL(text) {
+      const urlRegex = /https?:\/\/[^\s]+|(?:www\.)?[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(?:\/[^\s]*)?/g;
+      const matches = text.match(urlRegex);
+      if (!matches) return null;
+      let url = matches[0];
+      if (!url.startsWith('http')) url = 'https://' + url;
+      try { new URL(url); return url; } catch { return null; }
+    }
+
+    async function sendMessage() {
+      const text = inputEl.value.trim();
+      if (!text || isLoading) return;
+
+      isLoading = true;
+      sendBtn.disabled = true;
+      inputEl.value = '';
+      inputEl.style.height = 'auto';
+
+      appendMessage('user', text);
+      chatHistory.push({ role: 'user', content: text });
+
+      const detectedURL = extractURL(text);
+
+      showThinking();
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: text,
+            url: detectedURL,
+            history: chatHistory.slice(-10),
+          }),
+        });
+
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const data = await res.json();
+
+        removeThinking();
+
+        if (data.report) {
+          const reportHTML = renderReport(data.report);
+          appendMessage('assistant', reportHTML, true);
+          chatHistory.push({
+            role: 'assistant',
+            content: `Security analysis complete for ${data.report.url}. Grade: ${data.report.grade} (${data.report.overallScore}/100)`,
+          });
+        } else if (data.message) {
+          appendMessage('assistant', data.message);
+          chatHistory.push({ role: 'assistant', content: data.message });
+        }
+      } catch (err) {
+        removeThinking();
+        const errHTML = `<div class="error-card">⚠ ${escapeHTML(err.message || 'Request failed')}</div>`;
+        appendMessage('assistant', errHTML, true);
+      } finally {
+        isLoading = false;
+        sendBtn.disabled = false;
+        inputEl.focus();
+      }
+    }
+  </script>
+</body>
+</html>

@@ -65,7 +65,6 @@ Cloudflare Worker (src/index.ts)          ← Routes requests, serves HTML
 ```bash
 # 1. Clone the repo
 git clone https://github.com/yourusername/AI-Security-Analyzer
-cd cf_ai_security_analyzer
 
 # 2. Install dependencies
 npm install
@@ -122,7 +121,7 @@ Wrangler will output your live URL (e.g. `https://cf-ai-security-analyzer.yoursu
 ## Project Structure
 
 ```
-cf_ai_security_analyzer/
+AI-Security-Analyzer/
 ├── src/
 │   ├── index.ts          # Worker entry point + chat API handler
 │   ├── workflow.ts       # Cloudflare Workflow (multi-step pipeline)

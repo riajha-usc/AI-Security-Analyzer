@@ -150,9 +150,14 @@ cf_ai_security_analyzer/
 
 ## Screenshots for the local-run
 
-- **<img width="1440" height="860" alt="Screenshot 2026-05-14 at 8 03 02 PM" src="https://github.com/user-attachments/assets/e40afcc4-18a9-4b2c-a79f-df50455f4e2d" />
--
-- **<img width="1440" height="862" alt="Screenshot 2026-05-14 at 8 03 37 PM" src="https://github.com/user-attachments/assets/ae780db2-ebbd-4596-ba1a-bf37a3d0ed51" />
+- ************************************************************************************************************************************************
+- <img width="1440" height="860" alt="Screenshot 2026-05-14 at 8 03 02 PM" src="https://github.com/user-attachments/assets/e40afcc4-18a9-4b2c-a79f-df50455f4e2d" />
+- ************************************************************************************************************************************************
+- <img width="1440" height="857" alt="Screenshot 2026-05-14 at 8 15 03 PM" src="https://github.com/user-attachments/assets/35703932-7b51-472e-8647-0319023e1841" />
+- ************************************************************************************************************************************************
+- <img width="1437" height="860" alt="Screenshot 2026-05-14 at 8 15 15 PM" src="https://github.com/user-attachments/assets/ed4c2289-7314-47b6-bdca-6fc54bbd1766" />
+- ************************************************************************************************************************************************
+
 
 ## License
 

@@ -1,5 +1,4 @@
-# cf_ai_security_analyzer
-
+## SentinelAI
 > **AI-powered web security analyzer** built on Cloudflare Workers, Workflows, and Workers AI (Llama 3.3 70B).
 
 [![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/yourusername/cf_ai_security_analyzer)
@@ -148,6 +147,12 @@ cf_ai_security_analyzer/
 - DNS queries go through Cloudflare's own 1.1.1.1 infrastructure.
 
 ---
+
+## Screenshots for the local-run
+
+- **<img width="1440" height="860" alt="Screenshot 2026-05-14 at 8 03 02 PM" src="https://github.com/user-attachments/assets/e40afcc4-18a9-4b2c-a79f-df50455f4e2d" />
+-
+- **<img width="1440" height="862" alt="Screenshot 2026-05-14 at 8 03 37 PM" src="https://github.com/user-attachments/assets/ae780db2-ebbd-4596-ba1a-bf37a3d0ed51" />
 
 ## License
 

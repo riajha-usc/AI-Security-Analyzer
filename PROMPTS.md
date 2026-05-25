@@ -1,6 +1,4 @@
-# PROMPTS.md - AI Prompts Used in Development
-
-This file documents the AI prompts used during the development of `cf_ai_security_analyzer`, as required by the assignment.
+# AI Prompts Used in Development
 
 ---
 
@@ -90,9 +88,3 @@ This file documents the AI prompts used during the development of `cf_ai_securit
 **Used for:** `build.mjs`.
 
 ---
-
-## Notes
-
-- All prompts were iterated on during development - the versions above represent the final, most effective form used.
-- Code generated from these prompts was reviewed, debugged, and adapted to fit the Cloudflare Workers runtime (no Node.js built-ins, edge-compatible fetch, Workflow API specifics).
-- The frontend HTML was substantially hand-tuned for visual polish after the initial generation.

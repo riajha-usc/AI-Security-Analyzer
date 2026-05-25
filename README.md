@@ -118,27 +118,6 @@ Wrangler will output your live URL (e.g. `https://cf-ai-security-analyzer.yoursu
 
 ---
 
-## Project Structure
-
-```
-AI-Security-Analyzer/
-├── src/
-│   ├── index.ts          # Worker entry point + chat API handler
-│   ├── workflow.ts       # Cloudflare Workflow (multi-step pipeline)
-│   ├── analyzers.ts      # Header / SSL / DNS / redirect analysis logic
-│   └── types.ts          # Shared TypeScript interfaces
-├── public/
-│   └── index.html        # Chat UI frontend
-├── build.mjs             # Build script (inlines HTML into Worker)
-├── wrangler.toml         # Cloudflare deployment config
-├── tsconfig.json
-├── package.json
-├── README.md
-└── PROMPTS.md            # AI prompts used during development
-```
-
----
-
 ## Security & Privacy
 
 - **No data is stored.** Analysis runs entirely in-flight through the Workflow.

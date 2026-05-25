@@ -1,5 +1,5 @@
 {
-  "name": "cf-ai-security-analyzer",
+  "name": "ai-security-analyzer",
   "version": "1.0.0",
   "description": "AI-powered web security analyzer built on Cloudflare Workers",
   "type": "module",

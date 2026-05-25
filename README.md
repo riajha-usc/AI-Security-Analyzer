@@ -1,8 +1,6 @@
 ## SentinelAI
 > **AI-powered web security analyzer** built on Cloudflare Workers, Workflows, and Workers AI (Llama 3.3 70B).
 
-[![Deploy to Cloudflare Workers](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/yourusername/cf_ai_security_analyzer)
-
 ---
 
 ## What It Does
